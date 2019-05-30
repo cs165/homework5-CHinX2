@@ -6,7 +6,7 @@ const key = require('./privateSettings.json');
 
 // TODO(you): Change the value of this string to the spreadsheet id for your
 // GSA spreadsheet. See HW5 spec for more information.
-const SPREADSHEET_ID = '__YOUR__SPREADSHEET__ID__HERE__';
+const SPREADSHEET_ID = '1Mmi6o9yzli5CnpOLR20ZsuVeT6askJUc7gjg7V6tVbY';
 
 const app = express();
 const jsonParser = bodyParser.json();
@@ -17,20 +17,64 @@ app.use(express.static('public'));
 async function onGet(req, res) {
   const result = await sheet.getRows();
   const rows = result.rows;
-  console.log(rows);
+  const tag = Object.values(rows[0]);
+  const info = [];
+  var tcnt = tag.length;
+  var rcnt = Object.values(rows).length;
 
   // TODO(you): Finish onGet.
+  for(var i = 1; i<rcnt; i++) {
+    var val = Object.values(rows[i]);
+    var item = {};
+    for(var j=0; j<tcnt; j++) {
+      item[tag[j]] = val[j];
+    }
+    info.push(item);
+  }
+  //console.log(info);
 
-  res.json( { status: 'unimplemented'} );
+  res.json( info );
 }
 app.get('/api', onGet);
 
 async function onPost(req, res) {
   const messageBody = req.body;
+  const key = Object.keys(messageBody);
+  const value = Object.values(messageBody);
+  var pcnt = value.length;
+
+  const result = await sheet.getRows();
+  const rows = result.rows;
+  const tag = Object.values(rows[0]);
+  var tcnt = tag.length;
+  var rcnt = Object.values(rows).length;
+  const item = [tcnt];
+  var check = 0;
+  var correspond = 0;
 
   // TODO(you): Implement onPost.
+  for(var i=0; i<tcnt; i++) {
+    if(correspond === 1)break;
+    for(var j=0; j<pcnt; j++) {
+      if(key[j] === tag[i]) {
+        for(var k=0; k<rcnt; k++) {
+          var val = Object.values(rows[k]);
+          if(val[i] === value[j]) {
+            correspond = 1;
+            break;
+          }
+        }
+        item[i] = value[j];
+        check = check + 1;
+      }
+    }
+  }
+  //console.log(item);
+  if(check === tcnt && correspond === 0) {
+    var pro = await sheet.appendRow(item);
+  }
 
-  res.json( { status: 'unimplemented'} );
+  res.json( { response: 'success'} );
 }
 app.post('/api', jsonParser, onPost);
 
@@ -38,6 +82,9 @@ async function onPatch(req, res) {
   const column  = req.params.column;
   const value  = req.params.value;
   const messageBody = req.body;
+  console.log(column);
+  console.log(value);
+  console.log(messageBody);
 
   // TODO(you): Implement onPatch.
 
@@ -48,10 +95,25 @@ app.patch('/api/:column/:value', jsonParser, onPatch);
 async function onDelete(req, res) {
   const column  = req.params.column;
   const value  = req.params.value;
+  const result = await sheet.getRows();
+  const rows = result.rows;
+  const tag = Object.values(rows[0]);
+  var tcnt = tag.length;
+  var rcnt = Object.values(rows).length;
 
   // TODO(you): Implement onDelete.
+  for(var j=0; j<tcnt; j++) {
+      if(tag[j] === column)
+        break;
+  }
+  for(var i = 1; i<rcnt; i++) {
+    var val = Object.values(rows[i]);
+    if(val[j] === value) {
+      var pro = await sheet.deleteRow(i);
+    }
+  }
 
-  res.json( { status: 'unimplemented'} );
+  res.json( { response: 'success'} );
 }
 app.delete('/api/:column/:value',  onDelete);
 
@@ -60,5 +122,5 @@ app.delete('/api/:column/:value',  onDelete);
 const port = process.env.PORT || 3000;
 
 app.listen(port, function () {
-  console.log(`Server listening on port ${port}!`);
+  console.log(`Fullstack HW5: Server listening on port ${port}!`);
 });
