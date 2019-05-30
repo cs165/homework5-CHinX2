@@ -56,10 +56,10 @@ async function onPost(req, res) {
   for(var i=0; i<tcnt; i++) {
     if(correspond === 1)break;
     for(var j=0; j<pcnt; j++) {
-      if(key[j] === tag[i]) {
+      if(key[j].toLowerCase() === tag[i].toLowerCase()) {
         for(var k=0; k<rcnt; k++) {
           var val = Object.values(rows[k]);
-          if(val[i] === value[j]) {
+          if(val[i].toLowerCase() === value[j].toLowerCase()) {
             correspond = 1;
             break;
           }
@@ -87,6 +87,7 @@ async function onPatch(req, res) {
   console.log(messageBody);
 
   // TODO(you): Implement onPatch.
+  
 
   res.json( { status: 'unimplemented'} );
 }
@@ -103,12 +104,12 @@ async function onDelete(req, res) {
 
   // TODO(you): Implement onDelete.
   for(var j=0; j<tcnt; j++) {
-      if(tag[j] === column)
+      if(tag[j].toLowerCase() === column.toLowerCase())
         break;
   }
   for(var i = 1; i<rcnt; i++) {
     var val = Object.values(rows[i]);
-    if(val[j] === value) {
+    if(val[j].toLowerCase() === value.toLowerCase()) {
       var pro = await sheet.deleteRow(i);
     }
   }
